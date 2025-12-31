@@ -1,161 +1,198 @@
 <?xml version="1.0"?>
-<!-- Defines the complete robot structure -->
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hugo_arm">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hugo_complete">
   
+  <!-- Include materials -->
   <xacro:include filename="$(find hugo_robot)/urdf/materials.xacro"/>
   
-  <!-- Parameters -->
-  <xacro:property name="arm_prefix" value="arm1"/>
+  <!-- World/Base link (reference frame) -->
+  <link name="world"/>
   
-  <!-- Base (wheeled cart) -->
-  <link name="${arm_prefix}_base">
+  <!-- Surgical table -->
+  <joint name="world_to_table" type="fixed">
+    <parent link="world"/>
+    <child link="surgical_table"/>
+    <origin xyz="0 0 0.75" rpy="0 0 0"/>
+  </joint>
+  
+  <link name="surgical_table">
     <visual>
       <geometry>
-        <box size="0.4 0.4 0.6"/>
+        <box size="2.0 0.6 0.1"/>
       </geometry>
-      <material name="white"/>
+      <material name="gray"/>
     </visual>
     <collision>
       <geometry>
-        <box size="0.4 0.4 0.6"/>
+        <box size="2.0 0.6 0.1"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="25.0"/>
-      <inertia ixx="2.0" ixy="0" ixz="0" iyy="2.0" iyz="0" izz="1.5"/>
-    </inertial>
   </link>
   
-  <!-- Joint 1: Base rotation (vertical column) -->
-  <joint name="${arm_prefix}_joint1" type="revolute">
-    <parent link="${arm_prefix}_base"/>
-    <child link="${arm_prefix}_link1"/>
-    <origin xyz="0 0 0.6" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper="3.14" effort="100" velocity="1.0"/>
-  </joint>
+  <!-- Macro for creating arm cart at specific position/angle -->
+  <xacro:macro name="hugo_arm" params="prefix x y angle">
+    
+    <!-- Position arm cart -->
+    <joint name="world_to_${prefix}" type="fixed">
+      <parent link="world"/>
+      <child link="${prefix}_base"/>
+      <origin xyz="${x} ${y} 0" rpy="0 0 ${angle}"/>
+    </joint>
+    
+    <!-- Arm structure (6 DOF) -->
+    <link name="${prefix}_base">
+      <visual>
+        <geometry>
+          <box size="0.4 0.4 0.6"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+      <inertial>
+        <mass value="25.0"/>
+        <inertia ixx="2.0" ixy="0" ixz="0" iyy="2.0" iyz="0" izz="1.5"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint1" type="revolute">
+      <parent link="${prefix}_base"/>
+      <child link="${prefix}_link1"/>
+      <origin xyz="0 0 0.6" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-3.14" upper="3.14" effort="100" velocity="1.0"/>
+    </joint>
+    
+    <link name="${prefix}_link1">
+      <visual>
+        <geometry>
+          <cylinder radius="0.08" length="0.3"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+      <inertial>
+        <mass value="5.0"/>
+        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.05"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint2" type="revolute">
+      <parent link="${prefix}_link1"/>
+      <child link="${prefix}_link2"/>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.57" upper="1.57" effort="80" velocity="1.0"/>
+    </joint>
+    
+    <link name="${prefix}_link2">
+      <visual>
+        <geometry>
+          <box size="0.1 0.1 0.4"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+      <inertial>
+        <mass value="4.0"/>
+        <inertia ixx="0.08" ixy="0" ixz="0" iyy="0.08" iyz="0" izz="0.02"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint3" type="revolute">
+      <parent link="${prefix}_link2"/>
+      <child link="${prefix}_link3"/>
+      <origin xyz="0 0 0.4" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-2.0" upper="2.0" effort="60" velocity="1.0"/>
+    </joint>
+    
+    <link name="${prefix}_link3">
+      <visual>
+        <geometry>
+          <box size="0.08 0.08 0.35"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+      <inertial>
+        <mass value="3.0"/>
+        <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.01"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint4" type="revolute">
+      <parent link="${prefix}_link3"/>
+      <child link="${prefix}_link4"/>
+      <origin xyz="0 0 0.35" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-3.14" upper="3.14" effort="40" velocity="1.5"/>
+    </joint>
+    
+    <link name="${prefix}_link4">
+      <visual>
+        <geometry>
+          <cylinder radius="0.04" length="0.15"/>
+        </geometry>
+        <material name="orange"/>
+      </visual>
+      <inertial>
+        <mass value="1.5"/>
+        <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.005"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint5" type="revolute">
+      <parent link="${prefix}_link4"/>
+      <child link="${prefix}_link5"/>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.57" upper="1.57" effort="30" velocity="1.5"/>
+    </joint>
+    
+    <link name="${prefix}_link5">
+      <visual>
+        <geometry>
+          <box size="0.06 0.06 0.12"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+      <inertial>
+        <mass value="1.0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.005"/>
+      </inertial>
+    </link>
+    
+    <joint name="${prefix}_joint6" type="revolute">
+      <parent link="${prefix}_link5"/>
+      <child link="${prefix}_end_effector"/>
+      <origin xyz="0 0 0.12" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-3.14" upper="3.14" effort="20" velocity="2.0"/>
+    </joint>
+    
+    <link name="${prefix}_end_effector">
+      <visual>
+        <geometry>
+          <cylinder radius="0.015" length="0.54"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+      <inertial>
+        <mass value="0.3"/>
+        <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.0001"/>
+      </inertial>
+    </link>
+    
+  </xacro:macro>
   
-  <link name="${arm_prefix}_link1">
-    <visual>
-      <geometry>
-        <cylinder radius="0.08" length="0.3"/>
-      </geometry>
-      <material name="gray"/>
-    </visual>
-    <inertial>
-      <mass value="5.0"/>
-      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.05"/>
-    </inertial>
-  </link>
-
-  <!-- Joint 2: Shoulder pitch -->
-  <joint name="${arm_prefix}_joint2" type="revolute">
-    <parent link="${arm_prefix}_link1"/>
-    <child link="${arm_prefix}_link2"/>
-    <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-1.57" upper="1.57" effort="80" velocity="1.0"/>
-  </joint>
+  <!-- Instantiate 4 arms in "Compact" configuration -->
+  <!-- Positions approximated - arms around 1.5m from table center -->
   
-  <link name="${arm_prefix}_link2">
-    <visual>
-      <geometry>
-        <box size="0.1 0.1 0.4"/>
-      </geometry>
-      <material name="white"/>
-    </visual>
-    <inertial>
-      <mass value="4.0"/>
-      <inertia ixx="0.08" ixy="0" ixz="0" iyy="0.08" iyz="0" izz="0.02"/>
-    </inertial>
-  </link>
-
-  <!-- Joint 3: Elbow -->
-  <joint name="${arm_prefix}_joint3" type="revolute">
-    <parent link="${arm_prefix}_link2"/>
-    <child link="${arm_prefix}_link3"/>
-    <origin xyz="0 0 0.4" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-2.0" upper="2.0" effort="60" velocity="1.0"/>
-  </joint>
+  <!-- Arm 1: Front right (100° in compact, ~1.74 rad) -->
+  <xacro:hugo_arm prefix="arm1" x="0.5" y="-1.4" angle="1.74"/>
   
-  <link name="${arm_prefix}_link3">
-    <visual>
-      <geometry>
-        <box size="0.08 0.08 0.35"/>
-      </geometry>
-      <material name="gray"/>
-    </visual>
-    <inertial>
-      <mass value="3.0"/>
-      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.01"/>
-    </inertial>
-  </link>
-
-  <!-- Joint 4: Wrist roll -->
-  <joint name="${arm_prefix}_joint4" type="revolute">
-    <parent link="${arm_prefix}_link3"/>
-    <child link="${arm_prefix}_link4"/>
-    <origin xyz="0 0 0.35" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper="3.14" effort="40" velocity="1.5"/>
-  </joint>
+  <!-- Arm 2: Camera arm, front center (140° = 2.44 rad) -->
+  <xacro:hugo_arm prefix="arm2" x="0" y="-1.5" angle="2.44"/>
   
-  <link name="${arm_prefix}_link4">
-    <visual>
-      <geometry>
-        <cylinder radius="0.04" length="0.15"/>
-      </geometry>
-      <material name="orange"/>
-    </visual>
-    <inertial>
-      <mass value="1.5"/>
-      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.005"/>
-    </inertial>
-  </link>
-
-  <!-- Joint 5: Wrist pitch -->
-  <joint name="${arm_prefix}_joint5" type="revolute">
-    <parent link="${arm_prefix}_link4"/>
-    <child link="${arm_prefix}_link5"/>
-    <origin xyz="0 0 0.075" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-1.57" upper="1.57" effort="30" velocity="1.5"/>
-  </joint>
+  <!-- Arm 3: Back left (220° = 3.84 rad) -->
+  <xacro:hugo_arm prefix="arm3" x="-0.5" y="1.4" angle="3.84"/>
   
-  <link name="${arm_prefix}_link5">
-    <visual>
-      <geometry>
-        <box size="0.06 0.06 0.12"/>
-      </geometry>
-      <material name="white"/>
-    </visual>
-    <inertial>
-      <mass value="1.0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.005"/>
-    </inertial>
-  </link>
-
-  <!-- Joint 6: Wrist yaw (instrument holder) -->
-  <joint name="${arm_prefix}_joint6" type="revolute">
-    <parent link="${arm_prefix}_link5"/>
-    <child link="${arm_prefix}_end_effector"/>
-    <origin xyz="0 0 0.12" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper="3.14" effort="20" velocity="2.0"/>
-  </joint>
-  
-  <link name="${arm_prefix}_end_effector">
-    <visual>
-      <geometry>
-        <cylinder radius="0.015" length="0.54"/>  <!-- 54cm instrument -->
-      </geometry>
-      <material name="gray"/>
-    </visual>
-    <inertial>
-      <mass value="0.3"/>
-      <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.0001"/>
-    </inertial>
-  </link>
+  <!-- Arm 4: Back right (260° = 4.54 rad) -->
+  <xacro:hugo_arm prefix="arm4" x="0.5" y="1.4" angle="4.54"/>
 
 </robot>
