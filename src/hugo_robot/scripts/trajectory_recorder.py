@@ -39,7 +39,7 @@ class TrajectoryRecorder(Node):
         
         # Simulation parameters
         self.start_time = self.get_clock().now()
-        self.duration = 20.0  # seconds
+        self.duration = 600  # seconds
         
         self.get_logger().info(f'Recording to: {self.csv_file}')
         self.get_logger().info(f'Duration: {self.duration}s')

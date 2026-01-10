@@ -40,4 +40,13 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# Workspace analyzer
+install(PROGRAMS
+  scripts/trajectory_recorder.py
+  scripts/simple_controller.py
+  scripts/docking_sequence.py
+  scripts/workspace_analyzer.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
